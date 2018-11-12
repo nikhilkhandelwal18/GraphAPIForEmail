@@ -3,3 +3,5 @@
 ################################################################################
 
 /GraphAPIForEmail/bin
+/GraphAPIForEmail/obj/Debug
+/packages

@@ -1,0 +1,45 @@
+﻿body {
+margin:0 !important;
+padding:0 !important;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+
+  padding-top: 50px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+.form-group{
+  margin-bottom:0px !important;
+}
+.page-pagination{
+  width:100%;
+}
+.page-pagination .form-control {
+    display: inline-block !important;
+    width: 20% !important;
+  }
+.main-heading {
+  margin-bottom: 10px;
+  background: #eae9e9;
+  font-size: 18px;
+  padding:5px 0px;
+}
+  .main-heading h2 {
+    margin-top: 10px;
+    color: #223184;
+  }
+.table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th{
+  word-break:break-word;
+}
+.select-box .form-control {
+  display: inline-block;
+  width: 48%;
+  margin: 0px 1px;
+}

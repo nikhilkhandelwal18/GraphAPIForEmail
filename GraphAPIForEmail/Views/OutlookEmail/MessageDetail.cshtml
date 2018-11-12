@@ -1,0 +1,48 @@
+﻿@model GraphAPIForEmail.Models.MessageDetail
+
+
+<h2>Detail</h2>
+<div>
+  @Html.LabelFor(m => m.Message.From) :
+  @Html.DisplayFor(m => m.Message.From.EmailAddress.Name)
+</div>
+<div>
+  @Html.LabelFor(m => m.Message.Subject) :
+  @Html.DisplayFor(m => m.Message.Subject)
+</div>
+
+<div>
+  @Html.LabelFor(m => m.Message.ReceivedDateTime) :
+  @Html.DisplayFor(m => m.Message.ReceivedDateTime)
+</div>
+
+<div>
+  @foreach (var attachment in Model.Attachments)
+  {
+    if (((Microsoft.Graph.FileAttachment)attachment).IsInline == false)
+    {
+      <a href=@Url.Action("ViewAttachment", new { fileName = attachment.Name, id = attachment.Id, msgId = Model.Message.Id })>
+        @attachment.Name
+      </a>
+    }
+  }
+
+
+  @*@for (int i = 0; i <= Model.Attachments.Count - 1; i++)
+    {
+      if (((Microsoft.Graph.FileAttachment)Model.Attachments[i]).ContentId == null)
+      {
+        <a href=@Url.Action("ViewAttachment", new { fileName = Model.Attachments[i].Name, id = Model.Attachments[i].Id, msgId = Model.Message.Id })>
+          @Model.Attachments[i].Name
+        </a>
+      }
+
+
+    }*@
+</div>
+<div>
+  <div style="width:100%;overflow-x:auto;">
+    @(new HtmlString(Model.Message.Body.Content))
+  </div>
+</div>
+

@@ -1,0 +1,144 @@
+﻿@model GraphAPIForEmail.Models.MessagePaging
+<script src="~/Scripts/AjaxUtil.js"></script>
+<div class="pagination page-pagination">
+  <div class="form-group">
+    @Html.DropDownListFor(m => m.Top,
+             new SelectList(Model.PageSizeList), new { @class = "form-control" })
+
+    <input type="hidden" value=@Model.Count id="hdnCount" name="hdnCount" />
+    <button type="button" class="btn btn-primary" title="Newer" name="Newer" value="<" alt="Newer" id="btnNewer"><span class="glyphicon glyphicon-chevron-left"></span></button>
+    <input type="hidden" value=@Model.Newer id="hdnNewer" name="hdnNewer" />
+    &nbsp;
+    <button type="button" class="btn btn-primary" title="Older" name="Older" value=">" alt="Older" id="btnOlder"><span class="glyphicon glyphicon-chevron-right"></span></button>
+    <input type="hidden" value=@Model.Older id="hdnOlder" name="hdnOlder" />
+  </div>
+</div>
+  <table class="table table-condenced" id="msgGrid">
+    <tr>
+      <th> <img src="../Content/pin.png" height="20px" width="20px" /></th>
+      <th>From</th>
+      <th>Subject</th>
+      <th>Received</th>
+      <th></th>
+    </tr>
+
+    @foreach (var item in Model.Messages)
+    {
+      <tr>
+        <td>
+          @if (@item.HasAttachments == true)
+          {
+            <img src="../Content/pin.png" height="20px" width="20px" />
+          }
+        </td>
+        <td>
+          @item.From.EmailAddress.Name
+        </td>
+        <td>
+          @item.Subject
+        </td>
+        <td>
+          @Convert.ToDateTime(item.ReceivedDateTime?.LocalDateTime)
+        </td>
+        <td>
+          <input type="hidden" value=@item.Id id="hdnFlag" name="hdnFlag" />
+          <input type="button" class="details btn btn-primary" value="View" id="btnView" name="btnView" />
+        </td>
+      </tr>
+    }
+
+
+  </table>
+
+  <!-- Content Here -->
+  <script type="text/javascript">
+
+  $(document).ready(function () {
+
+    var disableButtons = function () {
+      debugger;
+      var totalCount = $("#hdnCount").val();
+      var totalOlder = $("#hdnOlder").val();
+      var totalNewer = $("#hdnNewer").val();
+
+      if (totalCount < totalOlder) {
+        $("#btnOlder").attr('disabled', 'disabled');
+      } else {
+        $('#btnOlder').removeAttr('disabled');
+      }
+
+      if (totalNewer <= 0) {
+        $("#btnNewer").attr('disabled', 'disabled');
+      } else {
+        $('#btnNewer').removeAttr('disabled');
+      }
+
+    };
+    //disableButtons();
+
+    var onSuccess = function (result) {
+      $("#messageList").html(result);
+      $("#messageDetail").empty();
+      $(".modal").hide();
+    };
+    var onError = function (error) {
+      alert('Failed to retrieve messages.' + error);
+      $(".modal").hide();
+    };
+
+    $("#btnNewer").click(function () {
+      $(".modal").show();
+      var data = { id: $("#SelectedFolderId").val(), pgSize: $("#Top").val(), skip: $('#hdnNewer').val() }
+      AccessServerPartialView('POST', '@Url.Action("GetMessages")', data, onSuccess, onError);
+      //disableButtons();
+      return false;
+    });
+
+    $("#btnOlder").click(function () {
+      $(".modal").show();
+      var data = { id: $("#SelectedFolderId").val(), pgSize: $("#Top").val(), skip: $('#hdnOlder').val() }
+      AccessServerPartialView('POST', '@Url.Action("GetMessages")', data, onSuccess, onError);
+     // disableButtons();
+      return false;
+    });
+
+    $("#Top").change(function () {
+      $(".modal").show();
+       var data = { id: $("#SelectedFolderId").val(), pgSize: $("#Top").val(), skip: 0 }
+      AccessServerPartialView('POST', '@Url.Action("GetMessages")', data, onSuccess, onError);
+        return false;
+      });
+
+
+
+    $("#msgGrid .details").click(function () {
+      $(".modal").show();
+      var id = $(this).closest("tr").find("td").find('input[type="hidden"]').val();
+      $.ajax({
+        type: "POST",
+        url: '@Url.Action("MessageDetail")',
+        dataType: "html",
+        data: '{msgId: "' + id + '"}',
+        contentType: "application/json; charset=utf-8",
+
+        success: function (response) {
+          debugger;
+          $("#messageDetail").html(response);
+          $(".modal").hide();
+        },
+        failure: function (response) {
+          debugger;
+          alert(response.responseText);
+          $(".modal").hide();
+        },
+        error: function (response) {
+          debugger;
+          alert(response.responseText);
+          $(".modal").hide();
+        }
+      });
+    });
+  });
+
+  </script>
+

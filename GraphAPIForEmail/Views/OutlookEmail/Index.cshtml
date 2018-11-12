@@ -1,0 +1,162 @@
+﻿@model GraphAPIForEmail.Models.EmailView
+
+@{
+  ViewBag.Title = "Index";
+  Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style type="text/css">
+  body {
+    font-family: Arial;
+    font-size: 10pt;
+  }
+
+  .modal {
+    position: fixed;
+    z-index: 999;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background-color: Black;
+    filter: alpha(opacity=60);
+    opacity: 0.6;
+    -moz-opacity: 0.8;
+  }
+
+  .center {
+    z-index: 1000;
+    margin: 300px auto;
+    padding: 10px;
+    width: 130px;
+    background-color: White;
+    border-radius: 10px;
+    filter: alpha(opacity=100);
+    opacity: 1;
+    -moz-opacity: 1;
+  }
+
+    .center img {
+      height: 128px;
+      width: 128px;
+    }
+</style>
+<div class="row main-heading">
+  <div class="col-md-12">
+    <h2>Outlook Email</h2>
+  </div>
+</div>
+
+@using (@Html.BeginForm())
+{
+  <div class="row">
+    <div class="col-md-6">
+      <div class="form-group select-box">
+        @Html.DropDownListFor(m => m.SelectedFolderId,
+                new SelectList(Model.EmailFolders, "Id", "DisplayName"),
+           "Select Folder", new { @class = "form-control" })
+  
+        <select class="form-control" id="SelectedSubFolderId">
+          <option selected="selected" value="0">Select Subfolder</option>
+        </select>
+      </div>
+      <div id="messageList"></div>
+    </div>
+    <div class="col-md-6">
+      <div class="row">
+        <div class="col-md-12">
+          <div id="messageDetail"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<div class="modal" style="display: none">
+  <div class="center">
+    <img src="~/Content/dual-ring-loader.gif" />
+  </div>
+</div>
+@section scripts{
+  <!-- Content Here -->
+  <script type="text/javascript">
+
+    $(document).ready(function () {
+      //Dropdownlist Selectedchange event
+      $("#SelectedFolderId").change(function () {
+        $(".modal").show();
+
+
+        $.ajax({
+          type: 'POST',
+          url: '@Url.Action("GetSubFolder")', // we are calling json method
+          dataType: 'html',
+          data: { folderId: $("#SelectedFolderId").val() },
+          ContentType: 'application/json; charset=utf-8',
+          success: function (response) {
+            $('#SelectedSubFolderId').empty().append('<option selected="selected" value="0">Select Subfolder</option>');            
+            for (var i = 0, len = JSON.parse(response).length; i < len; ++i) {
+              var folder = JSON.parse(response)[i];
+              $('#SelectedSubFolderId').append($("<option></option>").val(folder.Value).html(folder.Text));        
+            }
+          },
+          error: function (ex) {
+            alert('Failed to retrieve messages.' + ex);
+            $(".modal").hide();
+          }
+        });
+
+
+        $.ajax({
+          type: 'POST',
+          url: '@Url.Action("GetMessages")', // we are calling json method
+          dataType: 'html',
+          data: { id: $("#SelectedFolderId").val(), pgSize: 10, skip: 0 },
+          ContentType: 'application/html; charset=utf-8',
+          success: function (result) {
+            $("#messageList").html(result);
+            $("#messageDetail").empty();
+            $(".modal").hide();
+          },
+          error: function (ex) {
+            alert('Failed to retrieve messages.' + ex);
+            $(".modal").hide();
+          }
+        });
+        return false;
+      });
+
+
+
+      $("#SelectedSubFolderId").change(function () {
+        $(".modal").show();
+        debugger;
+        var folderId = $("#SelectedSubFolderId").val()
+        if (folderId == "0") {
+          folderId = $("#SelectedFolderId").val()
+        }
+
+        $.ajax({
+          type: 'POST',
+          url: '@Url.Action("GetMessages")', // we are calling json method
+          dataType: 'html',
+          data: { id: folderId, pgSize: 10, skip: 0 },
+          ContentType: 'application/html; charset=utf-8',
+          success: function (result) {
+            $("#messageList").html(result);
+            $("#messageDetail").empty();
+            $(".modal").hide();
+          },
+          error: function (ex) {
+            alert('Failed to retrieve messages.' + ex);
+            $(".modal").hide();
+          }
+        });
+        return false;
+      });
+
+    });
+
+  </script>
+}
+
