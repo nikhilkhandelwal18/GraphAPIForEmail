@@ -110,6 +110,26 @@ namespace GraphAPIForEmail.Models
 
       return attachment;
     }
+    
+    public static async Task<IList<User>> GetPeople(GraphServiceClient graphClient, string name)
+    {
+      try
+      {
+        var options = new[] { new QueryOption("$filter", $"startswith(givenName,'{name}')") };
+
+        var people = await graphClient.Users.Request(options).GetAsync();
+
+        //var people = graphClient.Users.Request().Top(5).GetAsync().GetAwaiter().GetResult();
+
+        return people.CurrentPage;
+      }
+      catch (Exception ex)
+      {
+
+        throw ex;
+      }
+
+    }
   }
 
 
